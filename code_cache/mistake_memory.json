@@ -1,0 +1,387 @@
+{
+  "mistakes": [
+    {
+      "timestamp": "2026-02-12T06:47:08.687879",
+      "task": "a sinewave generator that we can hear through the speakers with a tkinter interface and control for its frequency from 300 to 2kHz",
+      "task_type": "audio_generation",
+      "error_type": "keyerror",
+      "libraries": [
+        "pygame",
+        "numpy",
+        "tkinter"
+      ],
+      "lesson": "pygame.mixer.music.load() requires a FILE PATH (string), not raw audio bytes. For real-time audio generation from numpy arrays, use pygame.mixer.Sound(buffer=array) instead.\n\nWRONG:\npygame.mixer.music.load(sine_wave.astype(np.float32).tobytes(), self.sample_rate)\n\nCORRECT:\nsound_array = (sine_wave * 32767).astype(np.int16)\nsound = pygame.mixer.Sound(buffer=sound_array)\nsound.play(loops=-1)\n\nKey points:\n- music.load() expects a filename string, not bytes\n- Sound() can accept a buffer parameter for numpy arrays\n- Convert float arrays to 16-bit PCM: (array * 32767).astype(np.int16)\n- Never pass sample_rate as second argument to music.load()",
+      "error_snippet": "TypeError: argument 2 must be str, not int"
+    },
+    {
+      "timestamp": "2026-02-12T07:44:33.111474",
+      "task": "audio oscillator continuous sinewave with no interruptions",
+      "task_type": "audio_generation",
+      "error_type": "valueerror",
+      "libraries": [
+        "sounddevice",
+        "numpy",
+        "tkinter"
+      ],
+      "lesson": "For CONTINUOUS audio without interruptions, NEVER use sd.play() in a loop!\n\nWRONG APPROACH (causes clicks and pops):\nwhile running:\n    audio = np.sin(2 * np.pi * freq * t)\n    sd.play(audio, sample_rate)\n    sd.wait()\n\nCORRECT APPROACH (smooth continuous audio):\nclass AudioOsc:\n    def __init__(self):\n        self.sample_rate = 44100\n        self.time_offset = 0\n        self.frequency = 440\n        self.stream = sd.OutputStream(\n            channels=1,\n            samplerate=self.sample_rate,\n            callback=self.audio_callback\n        )\n        self.stream.start()\n    \n    def audio_callback(self, outdata, frames, time, status):\n        t = (self.time_offset + np.arange(frames)) / self.sample_rate\n        self.time_offset += frames\n        sine = np.sin(2 * np.pi * self.frequency * t)\n        outdata[:] = sine.reshape(-1, 1)\n\nKey points:\n1. Use OutputStream with callback NOT sd.play() in loop\n2. outdata.shape is (frames, channels) so use .reshape(-1, 1)\n3. Update self.frequency in slider callback - stream picks it up automatically",
+      "error_snippet": "ValueError: could not broadcast input array from shape (4410,) into shape (4410,2)"
+    },
+    {
+      "timestamp": "2026-02-15T09:41:42.585685",
+      "task": "plot the fourier transform of a pulse",
+      "task_type": "plotting",
+      "error_type": "modulenotfounderror",
+      "libraries": [
+        "math",
+        "matplotlib",
+        "numpy"
+      ],
+      "lesson": "Don't use math for plotting tasks - it's not available or not appropriate",
+      "error_snippet": "ModuleNotFoundError: No module named 'matplotlib'"
+    },
+    {
+      "timestamp": "2026-02-15T09:46:26.249039",
+      "task": "plot the fourier transform of a pulse",
+      "task_type": "plotting",
+      "error_type": "modulenotfounderror",
+      "libraries": [
+        "sounddevice",
+        "numpy",
+        "matplotlib"
+      ],
+      "lesson": "Don't use sounddevice for plotting tasks - it's not available or not appropriate",
+      "error_snippet": "ModuleNotFoundError: No module named 'matplotlib'"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "state space / kalman filter / matrix operations in numpy",
+      "task_type": "control_systems",
+      "error_type": "valueerror",
+      "libraries": [
+        "numpy",
+        "scipy",
+        "matplotlib"
+      ],
+      "lesson": "NumPy matmul dimension mismatch is the most common control systems error. Column vectors must be 2D: use np.array([[0],[1]]) NOT np.array([0,1]). When doing K @ x, x must be shape (n,1) not (n,). Fix: always reshape vectors with .reshape(-1,1) before matrix multiplication. For Kalman filter: x_est = x_est + K @ (y - C @ x_est) requires x_est shape (n,1), y shape (m,1), K shape (n,m), C shape (m,n). Never use 1D arrays in state space calculations.",
+      "error_snippet": "ValueError: matmul: Input operand does not have enough dimensions"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "matplotlib plot with LaTeX labels containing apostrophes or prime symbols",
+      "task_type": "plotting",
+      "error_type": "syntaxerror",
+      "libraries": [
+        "matplotlib",
+        "numpy"
+      ],
+      "lesson": "LaTeX labels in matplotlib cause SyntaxError when apostrophes conflict with Python string quotes. WRONG: label=r'$f'(x)$' \u00e2\u20ac\u201d the apostrophe in f' terminates the string. CORRECT approach 1: use double quotes for the outer string: label=r\"$f'(x)$\". CORRECT approach 2: use string concatenation to avoid the conflict. Never mix single quotes inside r-strings that contain apostrophes. Also: never write 'import matplotlib transforms' \u00e2\u20ac\u201d it must be 'import matplotlib.transforms'.",
+      "error_snippet": "SyntaxError: invalid decimal literal or unterminated string literal"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "bode plot using python control library ct.bode()",
+      "task_type": "control_systems",
+      "error_type": "typeerror",
+      "libraries": [
+        "control",
+        "numpy",
+        "matplotlib"
+      ],
+      "lesson": "ct.bode() does NOT return (fig, axes) \u00e2\u20ac\u201d it returns (mag, phase, omega) as numpy arrays. WRONG: fig, (mag_ax, phase_ax) = ct.bode(tf_system). CORRECT for data: mag, phase, omega = ct.bode(sys, plot=False). CORRECT for plot: ct.bode_plot(sys) \u00e2\u20ac\u201d this returns the figure. scipy.signal.bode(system) returns (w, mag, phase) \u00e2\u20ac\u201d note order differs from control library. Always check return value order before unpacking.",
+      "error_snippet": "TypeError: cannot unpack non-sequence or iter() returned non-iterator"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "bode plot or frequency response of transfer function using scipy",
+      "task_type": "plotting",
+      "error_type": "importerror",
+      "libraries": [
+        "scipy",
+        "matplotlib",
+        "numpy"
+      ],
+      "lesson": "freqresp2 does not exist in scipy.signal \u00e2\u20ac\u201d do not import it. WRONG: from scipy.signal import freqresp, freqresp2. For Bode plots use: system = scipy.signal.TransferFunction([100], [1, 5, 100]) then w, mag, phase = scipy.signal.bode(system). For frequency response: w, H = scipy.signal.freqs([100], [1, 5, 100]) for analog filters. To plot 3D surface of |G(s)|: s = X + 1j*Y, Z = np.abs(100 / (s**2 + 5*s + 100)), then ax.plot_surface(X, Y, Z).",
+      "error_snippet": "ImportError: cannot import name 'freqresp2' from 'scipy.signal'"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "play audio tones using winsound on Windows PC",
+      "task_type": "audio_processing",
+      "error_type": "typeerror",
+      "libraries": [
+        "winsound"
+      ],
+      "lesson": "winsound.Beep() requires INTEGER arguments only  frequency and duration must both be int, never float. WRONG: winsound.Beep(392.0, 500). CORRECT: winsound.Beep(int(frequency), int(duration_ms)). Frequency must be between 37 and 32767 Hz. F3=174.61, F4=349.23, G4=392, A4=440, C4=261.63.",
+      "error_snippet": "TypeError: argument 1 must be int, not float"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "3D surface plot or 3D visualization of mathematical function",
+      "task_type": "3d_visualization",
+      "error_type": "importerror",
+      "libraries": [
+        "matplotlib",
+        "numpy",
+        "mpl_toolkits"
+      ],
+      "lesson": "For 3D surface plots of mathematical functions, NEVER use pygame \u00e2\u20ac\u201d use matplotlib with mpl_toolkits. CORRECT pattern: from mpl_toolkits.mplot3d import Axes3D, then fig = plt.figure(), ax = fig.add_subplot(111, projection='3d'), then ax.plot_surface(X, Y, Z, cmap='viridis'). Poly3DCollection is imported from mpl_toolkits.mplot3d.art3d NOT from matplotlib.collections. FuncAnimation for 3D animation: from matplotlib.animation import FuncAnimation.",
+      "error_snippet": "ImportError: cannot import name 'Poly3DCollection' from 'matplotlib.collections'"
+    },
+    {
+      "timestamp": "2026-03-01T14:56:24.248496",
+      "task": "continuous audio output using sounddevice OutputStream callback",
+      "task_type": "audio_processing",
+      "error_type": "valueerror",
+      "libraries": [
+        "sounddevice",
+        "numpy"
+      ],
+      "lesson": "sounddevice OutputStream callback requires outdata shape (frames, channels) always 2D. WRONG: outdata[:] = np.sin(...) when sin returns shape (4410,). CORRECT mono: outdata[:] = wave.reshape(-1, 1). CORRECT stereo: outdata[:, 0] = wave; outdata[:, 1] = wave. Track phase continuously across callbacks to avoid clicks: self.phase += 2 * np.pi * freq * frames / sample_rate. Never use sd.play() in a loop \u00e2\u20ac\u201d always use OutputStream with callback for continuous audio.",
+      "error_snippet": "ValueError: could not broadcast input array from shape (4410,) into shape (4410,2)"
+    },
+    {
+      "timestamp": "2026-03-04T12:20:25.424688",
+      "task": "pygame sound generation with numpy arrays",
+      "task_type": "audio_processing",
+      "error_type": "valueerror",
+      "libraries": [
+        "pygame",
+        "numpy"
+      ],
+      "lesson": "pygame sound arrays must be int16 dtype NOT float32. WRONG: audio = np.sin(t * freq).astype(np.float32). RIGHT: audio = (np.sin(t * freq) * 32767).astype(np.int16). For stereo must be 2D: audio = np.column_stack([audio, audio]). pygame.sndarray.make_sound() requires shape (samples, 2) and dtype int16. Set pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512) BEFORE generating sounds.",
+      "error_snippet": "ValueError: Array must be 2 dimensional for stereo mixer"
+    },
+    {
+      "timestamp": "2026-03-05T18:36:00.796106",
+      "task": "matplotlib text styling with letter spacing",
+      "task_type": "plotting",
+      "error_type": "attributeerror",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "matplotlib Text objects do not support 'letter_spacing' property - it does not exist. WRONG: ax.text(..., letter_spacing=2). To simulate letter spacing use: ' '.join(list('YOUR TEXT')) to insert spaces between characters.",
+      "error_snippet": "AttributeError: 'Text' object has no property 'letter_spacing'"
+    },
+    {
+      "timestamp": "2026-03-06T16:20:06.663840",
+      "task": "display images on rotating opengl cube",
+      "task_type": "plotting",
+      "error_type": "best_practice",
+      "libraries": [
+        "pygame",
+        "pillow",
+        "opengl",
+        "numpy"
+      ],
+      "lesson": "OpenGL textures: ALWAYS use 1024x1024 (never 512x512 - causes blurring): img.resize((1024, 1024), Image.LANCZOS). ALWAYS flip before upload: img.transpose(Image.FLIP_TOP_BOTTOM) - PIL origin is top-left but OpenGL expects bottom-left causing mirroring. ALWAYS add mipmapping after glTexImage2D: glGenerateMipmap(GL_TEXTURE_2D) and glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR).",
+      "error_snippet": "opengl texture quality"
+    },
+    {
+      "timestamp": "2026-03-10T17:06:40.356436",
+      "task": "Plotting for poster or displays",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "matplotlib",
+        "numpy"
+      ],
+      "lesson": "For poster/display plots using ax.axis('off') with ax.text(): NEVER use plt.tight_layout() it causes ValueError when axes are off. Instead use plt.subplots_adjust(left=0.05, right=0.95, top=0.98, bottom=0.02) or remove tight_layout entirely. Only use bbox_inches='tight' inside savefig, not as a separate tight_layout() call.",
+      "error_snippet": "ValueError: tight_layout not applied because axes sizes collapsed to zero"
+    },
+    {
+      "timestamp": "2026-03-17T22:50:35.226673",
+      "task": "plotting",
+      "task_type": "plotting",
+      "error_type": "syntaxerror",
+      "libraries": [
+        "matplotlib",
+        "numpy"
+      ],
+      "lesson": "When generating code from research papers or documents, use ONLY ASCII characters in comments and strings. NEVER use em dashes (\u2014), en dashes (\u2013), smart quotes (\" \" ' '), ellipsis (\u2026), or any Unicode typography \u2014 they cause SyntaxError on execution. Replace \u2014 with -, replace \u2026 with ..., replace smart quotes with straight quotes.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-03-25T21:23:05.018317",
+      "task": "matplotlib axhline poster plotting",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "MISTAKE: matplotlib axvline/axhline do not accept 'transform' kwarg\nDATE: 2026-03-25\n\nWHAT WENT WRONG:\n  axvline() and axhline() manage their own transforms internally.\n  Passing `transform=...` raises:\n    ValueError: 'transform' is not allowed as a keyword argument in axvline\n\nROOT CAUSE:\n  These are convenience wrappers \u2014 they are NOT thin wrappers around Line2D.\n  They strip out certain kwargs (including 'transform') before passing\n  to the underlying artist, hence the explicit ValueError.\n\nFIX OPTIONS:\n  1. Use axvline(x=value) for data-coordinate lines \u2014 transform is transData by default.\n  2. Use ax.plot([x, x], [ymin, ymax], transform=your_transform) for custom transforms.\n  3. Use blended_transform_factory() when mixing data + axes coordinates.\n\nREMEMBER:\n  axvline  \u2192 x in data coords, y span in axes fraction (ymin/ymax)\n  axhline  \u2192 y in data coords, x span in axes fraction (xmin/xmax)\n  Neither accepts 'transform' as a kwarg. Use ax.plot() if you need that control.",
+      "error_snippet": "ax_hist.axhline(y_line, xmin=0.04, xmax=0.96,\nValueError: 'transform' is not allowed as a keyword argument; axhline generates its own transform."
+    },
+    {
+      "timestamp": "2026-05-01T17:28:44.045416",
+      "task": "Plot interactive Plotly charts using numpy arrays",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "numpy",
+        "plotly"
+      ],
+      "lesson": "Never pass numpy boolean values (np.True_, np.False_, numpy.bool_) to any Plotly property. Always cast to plain Python bool first using bool(). Affected properties include showlegend, visible, and any boolean Plotly argument. The error occurs when expressions like `len(arr) > 0` or numpy comparisons return numpy.bool_ instead of Python bool.",
+      "error_snippet": "ValueError: Invalid value of type 'numpy.bool' received for the 'showlegend' property of scatter. Received value: np.False_"
+    }
+  ],
+  "error_patterns": {
+    "keyerror::audio_generation": {
+      "count": 1,
+      "lesson": "pygame.mixer.music.load() requires a FILE PATH (string), not raw audio bytes...",
+      "libraries": [
+        "pygame",
+        "numpy",
+        "tkinter"
+      ]
+    },
+    "valueerror::audio_generation": {
+      "count": 1,
+      "lesson": "For CONTINUOUS audio without interruptions, NEVER use sd.play() in a loop!...",
+      "libraries": [
+        "sounddevice",
+        "numpy",
+        "tkinter"
+      ]
+    },
+    "modulenotfounderror::plotting": {
+      "count": 2,
+      "lesson": "Don't use math or sounddevice for plotting tasks",
+      "libraries": [
+        "math",
+        "matplotlib",
+        "numpy"
+      ]
+    },
+    "valueerror::control_systems": {
+      "count": 1,
+      "lesson": "NumPy matmul dimension mismatch is the most common control systems error...",
+      "libraries": [
+        "numpy",
+        "scipy",
+        "matplotlib"
+      ]
+    },
+    "syntaxerror::plotting": {
+      "count": 2,
+      "lesson": "LaTeX labels in matplotlib cause SyntaxError when apostrophes conflict with Python string quotes...",
+      "libraries": [
+        "matplotlib",
+        "numpy"
+      ]
+    },
+    "typeerror::control_systems": {
+      "count": 1,
+      "lesson": "ct.bode() does NOT return (fig, axes)...",
+      "libraries": [
+        "control",
+        "numpy",
+        "matplotlib"
+      ]
+    },
+    "importerror::plotting": {
+      "count": 1,
+      "lesson": "freqresp2 does not exist in scipy.signal...",
+      "libraries": [
+        "scipy",
+        "matplotlib",
+        "numpy"
+      ]
+    },
+    "typeerror::audio_processing": {
+      "count": 1,
+      "lesson": "winsound.Beep() requires INTEGER arguments only...",
+      "libraries": [
+        "winsound"
+      ]
+    },
+    "importerror::3d_visualization": {
+      "count": 1,
+      "lesson": "For 3D surface plots of mathematical functions, NEVER use pygame...",
+      "libraries": [
+        "matplotlib",
+        "numpy",
+        "mpl_toolkits"
+      ]
+    },
+    "valueerror::audio_processing": {
+      "count": 4,
+      "lesson": "sounddevice OutputStream callback requires outdata shape (frames, channels) \u00e2\u20ac\u201d always 2D...",
+      "libraries": [
+        "sounddevice",
+        "numpy"
+      ]
+    },
+    "attributeerror::plotting": {
+      "count": 3,
+      "lesson": "matplotlib Text objects do not support 'letter_spacing' property - it does not exist. WRONG: ax.text...",
+      "libraries": [
+        "matplotlib"
+      ]
+    },
+    "best_practice::plotting": {
+      "count": 1,
+      "lesson": "OpenGL textures: ALWAYS use 1024x1024 (never 512x512 - causes blurring)...",
+      "libraries": [
+        "pygame",
+        "pillow",
+        "opengl",
+        "numpy"
+      ]
+    },
+    "valueerror::plotting": {
+      "count": 1,
+      "lesson": "For poster/display plots using ax.axis('off') with ax.text(): NEVER use plt.tight_layout()...",
+      "libraries": [
+        "matplotlib",
+        "numpy"
+      ]
+    }
+  },
+  "library_incompatibilities": {
+    "pygame::audio_generation": {
+      "error_count": 1,
+      "common_error": "keyerror"
+    },
+    "numpy::audio_generation": {
+      "error_count": 1,
+      "common_error": "keyerror"
+    },
+    "sounddevice::audio_generation": {
+      "error_count": 1,
+      "common_error": "valueerror"
+    },
+    "math::plotting": {
+      "error_count": 2,
+      "common_error": "modulenotfounderror"
+    },
+    "sounddevice::plotting": {
+      "error_count": 1,
+      "common_error": "modulenotfounderror"
+    },
+    "numpy::control_systems": {
+      "error_count": 1,
+      "common_error": "valueerror"
+    },
+    "control::control_systems": {
+      "error_count": 1,
+      "common_error": "typeerror"
+    },
+    "scipy::plotting": {
+      "error_count": 1,
+      "common_error": "importerror"
+    },
+    "winsound::audio_processing": {
+      "error_count": 1,
+      "common_error": "typeerror"
+    },
+    "sounddevice::audio_processing": {
+      "error_count": 2,
+      "common_error": "valueerror"
+    },
+    "pygame::audio_processing": {
+      "error_count": 1,
+      "common_error": "valueerror"
+    }
+  },
+  "last_updated": "2026-05-01T17:28:44.045416"
+}

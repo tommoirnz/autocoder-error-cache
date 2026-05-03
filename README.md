@@ -3,3 +3,6 @@
 Pre-seeded error solution cache for AutoCoder.
 Download `error_search_cache.json` and place it in your 
 `C:\code_cache\` directory.
+
+NOTE: No other programs or software here. This is intentional, for main LLM software see Tom Moir
+on GITHUB. 

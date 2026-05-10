@@ -222,6 +222,29 @@
       ],
       "lesson": "Never pass numpy boolean values (np.True_, np.False_, numpy.bool_) to any Plotly property. Always cast to plain Python bool first using bool(). Affected properties include showlegend, visible, and any boolean Plotly argument. The error occurs when expressions like `len(arr) > 0` or numpy comparisons return numpy.bool_ instead of Python bool.",
       "error_snippet": "ValueError: Invalid value of type 'numpy.bool' received for the 'showlegend' property of scatter. Received value: np.False_"
+    },
+    {
+      "timestamp": "2026-05-05T19:56:54.787003",
+      "task": "Create Interactive Plotly visualisation in HTNL",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "plotly",
+        "plotly"
+      ],
+      "lesson": "Plotly go.Scatter 'fill' parameter only accepts these exact values:\n'none', 'tozeroy', 'tozerox', 'tonexty', 'tonextx', 'toself', 'tonext'\nNEVER use invented values like 'tonegativey' or 'topositivey' \u2014 they do not exist.",
+      "error_snippet": "ValueError: Invalid value of type 'builtins.str' received for the 'fill' property of scatter\n    Received value: 'tonegativey'\n    The 'fill' property is an enumeration that may be specified as:\n      - One of the following enumeration values:\n            ['none', 'tozeroy', 'tozerox', 'tonexty', 'tonextx', 'toself', 'tonext']"
+    },
+    {
+      "timestamp": "2026-05-09T13:53:19.383339",
+      "task": "Render character subtitle text in a pygame portrait gallery",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "pygame"
+      ],
+      "lesson": "The third argument to pygame.font.Font.render() must be a valid pygame color \u2014 an RGB tuple (r, g, b), RGBA tuple (r, g, b, a), or recognised color string. Passing None, a bare integer, or a malformed value raises ValueError: invalid color argument. Always validate before rendering:\n\n lerp_color must clamp output channels to 0-255.",
+      "error_snippet": "sub_surf = sub_font.render(CHAR_SUBTITLES[idx], True, color)\n# ValueError: invalid color argument"
     }
   ],
   "error_patterns": {
@@ -383,5 +406,5 @@
       "common_error": "valueerror"
     }
   },
-  "last_updated": "2026-05-01T17:28:44.045416"
+  "last_updated": "2026-05-09T13:55:25.367596"
 }

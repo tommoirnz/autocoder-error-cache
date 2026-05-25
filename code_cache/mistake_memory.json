@@ -245,6 +245,144 @@
       ],
       "lesson": "The third argument to pygame.font.Font.render() must be a valid pygame color \u2014 an RGB tuple (r, g, b), RGBA tuple (r, g, b, a), or recognised color string. Passing None, a bare integer, or a malformed value raises ValueError: invalid color argument. Always validate before rendering:\n\n lerp_color must clamp output channels to 0-255.",
       "error_snippet": "sub_surf = sub_font.render(CHAR_SUBTITLES[idx], True, color)\n# ValueError: invalid color argument"
+    },
+    {
+      "timestamp": "2026-05-14T16:26:27.441103",
+      "task": "matplotlib poster thin horizontal strip overlaps adjacent panel",
+      "task_type": "plotting",
+      "error_type": "layout_overlap",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "Thin horizontal strips with height less than 0.04 placed adjacent to tall panels will overlap when bbox_inches=tight shifts figure bounds. Increase strip height to 0.05 minimum. Use print({ax: ax.get_position() for ax in fig.axes}) to debug actual positions before saving.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T16:44:40.019166",
+      "task": "matplotlib circle patch distorts to ellipse when using transform=ax.transAxes",
+      "task_type": "plotting",
+      "error_type": "quality_issue",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "plt.Circle with transform=ax.transAxes uses axes fraction coordinates but the radius is in the same units for both x and y. If the axes is not square the circle will render as an ellipse. Use ax.scatter() for circular markers in axes-fraction layouts, or use matplotlib.patches.Ellipse and correct the x-radius by multiplying by the axes height/width ratio.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T18:04:10.637145",
+      "task": "'failed' keyword in runtime error detector causes false positive",
+      "task_type": "general",
+      "error_type": "best_practice",
+      "libraries": [],
+      "lesson": "Never use bare 'failed' as a runtime error pattern in output checking. Generated code commonly prints messages like 'download failed, using fallback' or 'retry failed' as part of normal fallback logic. This triggers false positive error detection and aborts otherwise successful runs. Use specific compound patterns like 'execution failed' or 'render failed' instead.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T18:11:50.959335",
+      "task": "Rotating animated 3D cube \u2014 matplotlib Agg backend produces static PNG only",
+      "task_type": "plotting",
+      "error_type": "best_practice",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "matplotlib.use('Agg') writes static PNG files only \u2014 animation and interactivity are impossible with this backend. For a rotating animated 3D cube use Plotly saved as an HTML file: fig = go.Figure(frames=[...]), fig.write_html('plots/cube.html'). Plotly HTML files are served by Nova's web server and display as interactive 3D in the browser. Never use matplotlib Agg for animation tasks.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T18:22:30.113488",
+      "task": "Downloading Wikimedia Commons thumbnail images programmatically",
+      "task_type": "3d_visualization",
+      "error_type": "valueerror",
+      "libraries": [
+        "urllib",
+        "pygame",
+        "pyopengl"
+      ],
+      "lesson": "Wikimedia Commons /thumb/ URLs return HTTP 400 unless the pixel size exactly matches an approved size. Remove /thumb/ from the path and remove the size prefix from the filename to get the full resolution URL. WRONG: https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/File.jpg/640px-File.jpg \u2014 RIGHT: https://upload.wikimedia.org/wikipedia/commons/4/45/File.jpg",
+      "error_snippet": "HTTP Error 400: Use thumbnail sizes listed on https://w.wiki/GHai"
+    },
+    {
+      "timestamp": "2026-05-14T18:55:16.432128",
+      "task": "Downloading multiple Wikimedia images for OpenGL cube faces",
+      "task_type": "3d_visualization",
+      "error_type": "valueerror",
+      "libraries": [
+        "urllib",
+        "requests",
+        "pyopengl",
+        "pygame"
+      ],
+      "lesson": "Never hardcode multiple Wikimedia image URLs \u2014 the model will hallucinate plausible-looking but non-existent filenames. Instead: (1) use only ONE confirmed real URL repeated across all 6 faces as fallback, or (2) normalise all URLs in code by stripping /thumb/ and size prefix: url = url.replace('/thumb/', '/'); url = re.sub(r'/\\d+px-[^/]+$', lambda m: m.group().split('-',1)[-1], url). Always verify each download succeeded before loading as texture.",
+      "error_snippet": "HTTP Error 404: Not Found"
+    },
+    {
+      "timestamp": "2026-05-14T19:05:50.609478",
+      "task": "glob pattern deletes files in project root",
+      "task_type": "file_handling",
+      "error_type": "best_practice",
+      "libraries": [
+        "glob",
+        "os"
+      ],
+      "lesson": "Never use bare wildcard glob patterns like *.png or *.jpg without a directory prefix. glob.glob(\"*.png\") matches all files in the current working directory which may be the project root. Always prefix with a specific subdirectory: glob.glob(\"web_images/*.png\").",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T19:06:32.276435",
+      "task": "matplotlib savefig silently fails to write file",
+      "task_type": "plotting",
+      "error_type": "best_practice",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "Always set matplotlib.use('Agg') before importing matplotlib.pyplot when generating files non-interactively. Without it matplotlib may default to an interactive backend and savefig will silently fail. These two lines must appear before any other matplotlib import: import matplotlib then matplotlib.use('Agg').",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T19:07:26.759011",
+      "task": "Wikimedia URL normalisation regex produces duplicate filename segment",
+      "task_type": "3d_visualization",
+      "error_type": "valueerror",
+      "libraries": [
+        "urllib",
+        "re"
+      ],
+      "lesson": "to convert Wikimedia /thumb/ URL to direct URL use: url = re.sub(r'/thumb(/[a-f0-9]/[a-f0-9]+/[^/]+)/\\d+px-[^/]+$', r'\\1', url). This converts .../thumb/1/10/File.jpg/1280px-File.jpg to .../commons/1/10/File.jpg. Add time.sleep(1) between downloads to avoid HTTP 429.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T19:08:13.280398",
+      "task": "plt.tight_layout conflicts with GridSpec explicit margins and suptitle",
+      "task_type": "plotting",
+      "error_type": "runtimeerror",
+      "libraries": [
+        "matplotlib"
+      ],
+      "lesson": "Do not call plt.tight_layout() when GridSpec already has explicit top/bottom/left/right margins set, especially alongside plt.suptitle(). It conflicts and may abort before savefig executes. Use bbox_inches='tight' on savefig instead. Always wrap savefig in try/except and print the absolute path to confirm save location.",
+      "error_snippet": ""
+    },
+    {
+      "timestamp": "2026-05-14T19:22:27.152055",
+      "task": "Finding real Wikimedia image URLs for download",
+      "task_type": "3d_visualization",
+      "error_type": "valueerror",
+      "libraries": [
+        "urllib",
+        "requests"
+      ],
+      "lesson": "Never guess or construct Wikimedia image URLs \u2014 the model hallucinate plausible but non-existent filenames. Use the Wikimedia API instead to get verified direct URLs: https://en.wikipedia.org/w/api.php?action=query&titles=File:Loch_Lomond.jpg&prop=imageinfo&iiprop=url&format=json. Or use the image search results already downloaded to web_images/ by the search_and_show_image tool \u2014 those files are real and already on disk. Reference them by their actual saved filenames rather than downloading new ones.",
+      "error_snippet": "HTTP Error 404: Not Found"
+    },
+    {
+      "timestamp": "2026-05-21T07:14:24.603227",
+      "task": "Plot data with plotly graph_objects, save interactive HTML chart with styled axes",
+      "task_type": "plotting",
+      "error_type": "valueerror",
+      "libraries": [
+        "plotly"
+      ],
+      "lesson": "plotly 5.x removed `titlefont` from axis and legend layouts. Use the nested `title.font` form instead. WRONG: xaxis=dict(title=\"Time\", titlefont=dict(size=14, color=\"white\")). RIGHT: xaxis=dict(title=dict(text=\"Time\", font=dict(size=14, color=\"white\"))). Same rule applies to yaxis.titlefont \u2192 yaxis.title.font, legend.titlefont \u2192 legend.title.font, and colorbar.titlefont \u2192 colorbar.title.font. The traceback signature is: ValueError: Invalid property specified for object of type plotly.graph_objs.layout.XAxis: 'titlefont'.",
+      "error_snippet": "ValueError: Invalid property specified for object of type plotly.graph_objs.layout.XAxis: 'titlefont'\n\nDid you mean \"tickfont\"?\n\nBad property path:\ntitlefont\n^^^^^^^^^"
     }
   ],
   "error_patterns": {
@@ -406,5 +544,5 @@
       "common_error": "valueerror"
     }
   },
-  "last_updated": "2026-05-09T13:55:25.367596"
+  "last_updated": "2026-05-21T07:14:24.603227"
 }
